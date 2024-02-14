@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
-import { wait } from './wait'
+import * as github from '@actions/github'
+import { createWorkflowEvent, pushToTinybird } from './tb'
 
 /**
  * The main function for the action.
@@ -7,18 +8,33 @@ import { wait } from './wait'
  */
 export async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
+    // Get Start and End time of current workflow
+    const octokit = github.getOctokit(core.getInput('github_token'))
+    const attempt_number = parseInt(
+      process.env.GITHUB_RUN_ATTEMPT as string,
+      10
+    )
 
-    // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-    core.debug(`Waiting ${ms} milliseconds ...`)
+    const response = await octokit.rest.actions.getWorkflowRunAttempt({
+      owner: github.context.repo.owner,
+      repo: github.context.repo.repo,
+      run_id: github.context.runId,
+      attempt_number
+    })
 
-    // Log the current timestamp, wait, then log the new timestamp
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    const started_at = response.data.run_started_at
+    if (!started_at) {
+      throw new Error('Could not get the start time of the workflow')
+    }
+    const now = new Date().toISOString()
 
-    // Set outputs for other workflow steps to use
-    core.setOutput('time', new Date().toTimeString())
+    const workflowEvent = await createWorkflowEvent(started_at, now)
+
+    const tb_token: string = core.getInput('tinybird_token')
+    const tb_endpoint: string = core.getInput('tinybird_endpoint')
+    core.setSecret(tb_token)
+
+    await pushToTinybird(workflowEvent, tb_token, tb_endpoint)
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)

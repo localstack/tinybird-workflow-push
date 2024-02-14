@@ -1,23 +1,23 @@
-name: 'The name of your action here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Push Workflow Data to Tinybird'
+description: 'Pushes Github Workflow run attempt metadata to Tinybird'
+author: 'localstack'
 
 # Add your action's branding here. This will appear on the GitHub Marketplace.
 branding:
-  icon: 'heart'
-  color: 'red'
+  icon: 'upload-cloud'
+  color: 'purple'
 
 # Define your inputs here.
 inputs:
-  milliseconds:
-    description: 'Your input description here'
+  github_token:
+    description: 'Github token for receiving start and end time of the workflow'
     required: true
-    default: '1000'
-
-# Define your outputs here.
-outputs:
-  time:
-    description: 'Your output description here'
+  tinybird_token:
+    description: 'The token to authenticate with Tinybird'
+    required: true
+  tinybird_endpoint:
+    description: 'The Tinybird endpoint to which to push the data to'
+    required: true
 
 runs:
   using: node20

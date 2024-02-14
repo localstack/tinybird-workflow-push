@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   test-typescript:
@@ -55,8 +56,6 @@ jobs:
         id: test-action
         uses: ./
         with:
-          milliseconds: 2000
-
-      - name: Print Output
-        id: output
-        run: echo "${{ steps.test-action.outputs.time }}"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tinybird_token: ${{ secrets.TINYBIRD_CI_TOKEN }}
+          tinybird_endpoint: "https://api.tinybird.co/v0/events?name=ci_workflows"
