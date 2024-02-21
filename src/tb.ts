@@ -2,7 +2,7 @@ import * as core from '@actions/core'
 import * as github from '@actions/github'
 
 type WorkflowEvent = {
-  run_id: number
+  run_id: string
   start: string
   end: string
   commit: string
@@ -17,7 +17,7 @@ export async function createWorkflowEvent(
   end: string
 ): Promise<WorkflowEvent> {
   const event: WorkflowEvent = {
-    run_id: github.context.runId,
+    run_id: github.context.runId.toString(),
     start,
     end,
     commit: github.context.sha,
@@ -32,19 +32,23 @@ export async function createWorkflowEvent(
 export async function pushToTinybird(
   data: WorkflowEvent,
   tb_token: string,
-  tb_endpoint: string
+  tb_datasource: string
 ): Promise<void> {
   const headers = new Headers()
   headers.append('Authorization', `Bearer ${tb_token}`)
 
   core.info(
-    `Pushing ${JSON.stringify(data)} to Tinybird endpoint: ${tb_endpoint}`
+    `Pushing ${JSON.stringify(data)} to Tinybird datasource: ${tb_datasource}`
   )
-  const response = await fetch(tb_endpoint, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(data)
-  })
+
+  const response = await fetch(
+    `https://api.tinybird.co/v0/events?name=${tb_datasource}`,
+    {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(data)
+    }
+  )
   if (!response.ok) {
     throw new Error(
       `Tinybird push failed with status ${response.status} (${response.statusText})`

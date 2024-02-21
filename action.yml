@@ -15,9 +15,10 @@ inputs:
   tinybird_token:
     description: 'The token to authenticate with Tinybird'
     required: true
-  tinybird_endpoint:
-    description: 'The Tinybird endpoint to which to push the data to'
+  tinybird_datasource:
+    description: 'The Tinybird datasource to which to push the data to'
     required: true
+    default: 'ci_workflows'
 
 runs:
   using: node20

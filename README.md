@@ -27,7 +27,7 @@ steps:
      with:
        github_token: ${{ secrets.GITHUB_TOKEN }}
        tinybird_token: ${{ secrets.TINYBIRD_TOKEN }}
-       tinybird_endpoint: "https://api.tinybird.co/v0/events?name=<your-data-source>"
+       tinybird_datasource: <your-data-source>
 ```
 
 ## Inputs
@@ -40,6 +40,6 @@ steps:
 
 **Required**: This token is used to authenticate with Tinybird.
 
-### `tinybird_endpoint`
+### `tinybird_datasource`
 
-**Required**: This is the endpoint to which the workflow run data should be pushed to.
+**Required**: This is the endpoint to which the workflow run data should be pushed to. (default: `ci_workflows`)
