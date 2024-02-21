@@ -29019,7 +29019,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 async function createWorkflowEvent(start, end) {
     const event = {
-        run_id: github.context.runId,
+        run_id: github.context.runId.toString(),
         start,
         end,
         commit: github.context.sha,
@@ -29031,11 +29031,11 @@ async function createWorkflowEvent(start, end) {
     return event;
 }
 exports.createWorkflowEvent = createWorkflowEvent;
-async function pushToTinybird(data, tb_token, tb_endpoint) {
+async function pushToTinybird(data, tb_token, tb_datasource) {
     const headers = new Headers();
     headers.append('Authorization', `Bearer ${tb_token}`);
-    core.info(`Pushing ${JSON.stringify(data)} to Tinybird endpoint: ${tb_endpoint}`);
-    const response = await fetch(tb_endpoint, {
+    core.info(`Pushing ${JSON.stringify(data)} to Tinybird datasource: ${tb_datasource}`);
+    const response = await fetch(`https://api.tinybird.co/v0/events?name=${tb_datasource}`, {
         method: 'POST',
         headers,
         body: JSON.stringify(data)
