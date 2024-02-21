@@ -31,10 +31,10 @@ export async function run(): Promise<void> {
     const workflowEvent = await createWorkflowEvent(started_at, now)
 
     const tb_token: string = core.getInput('tinybird_token')
-    const tb_endpoint: string = core.getInput('tinybird_endpoint')
+    const tb_datasource: string = core.getInput('tinybird_datasource')
     core.setSecret(tb_token)
 
-    await pushToTinybird(workflowEvent, tb_token, tb_endpoint)
+    await pushToTinybird(workflowEvent, tb_token, tb_datasource)
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)

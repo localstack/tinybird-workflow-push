@@ -28970,9 +28970,9 @@ async function run() {
         const now = new Date().toISOString();
         const workflowEvent = await (0, tb_1.createWorkflowEvent)(started_at, now);
         const tb_token = core.getInput('tinybird_token');
-        const tb_endpoint = core.getInput('tinybird_endpoint');
+        const tb_datasource = core.getInput('tinybird_datasource');
         core.setSecret(tb_token);
-        await (0, tb_1.pushToTinybird)(workflowEvent, tb_token, tb_endpoint);
+        await (0, tb_1.pushToTinybird)(workflowEvent, tb_token, tb_datasource);
     }
     catch (error) {
         // Fail the workflow run if an error occurs
@@ -29019,7 +29019,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 async function createWorkflowEvent(start, end) {
     const event = {
-        run_id: github.context.runId,
+        run_id: github.context.runId.toString(),
         start,
         end,
         commit: github.context.sha,
@@ -29031,11 +29031,11 @@ async function createWorkflowEvent(start, end) {
     return event;
 }
 exports.createWorkflowEvent = createWorkflowEvent;
-async function pushToTinybird(data, tb_token, tb_endpoint) {
+async function pushToTinybird(data, tb_token, tb_datasource) {
     const headers = new Headers();
     headers.append('Authorization', `Bearer ${tb_token}`);
-    core.info(`Pushing ${JSON.stringify(data)} to Tinybird endpoint: ${tb_endpoint}`);
-    const response = await fetch(tb_endpoint, {
+    core.info(`Pushing ${JSON.stringify(data)} to Tinybird datasource: ${tb_datasource}`);
+    const response = await fetch(`https://api.tinybird.co/v0/events?name=${tb_datasource}`, {
         method: 'POST',
         headers,
         body: JSON.stringify(data)
