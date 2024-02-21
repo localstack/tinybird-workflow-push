@@ -28972,7 +28972,12 @@ async function run() {
         const tb_token = core.getInput('tinybird_token');
         const tb_datasource = core.getInput('tinybird_datasource');
         core.setSecret(tb_token);
-        await (0, tb_1.pushToTinybird)(workflowEvent, tb_token, tb_datasource);
+        if (!tb_datasource || !tb_token) {
+            core.setFailed('Tinybird datasource and token must be provided');
+        }
+        else {
+            await (0, tb_1.pushToTinybird)(workflowEvent, tb_token, tb_datasource);
+        }
     }
     catch (error) {
         // Fail the workflow run if an error occurs
