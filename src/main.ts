@@ -28,7 +28,9 @@ export async function run(): Promise<void> {
     }
     const now = new Date().toISOString()
 
-    const status = response.data.status ? response.data.status : 'unknown'
+    const status = response.data.conclusion
+      ? response.data.conclusion
+      : 'unknown'
 
     const workflow_id: string = core.getInput('workflow_id')
     const workflowEvent = await createWorkflowEvent(

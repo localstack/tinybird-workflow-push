@@ -28968,7 +28968,9 @@ async function run() {
             throw new Error('Could not get the start time of the workflow');
         }
         const now = new Date().toISOString();
-        const status = response.data.status ? response.data.status : 'unknown';
+        const status = response.data.conclusion
+            ? response.data.conclusion
+            : 'unknown';
         const workflow_id = core.getInput('workflow_id');
         const workflowEvent = await (0, tb_1.createWorkflowEvent)(started_at, now, workflow_id, status);
         const tb_token = core.getInput('tinybird_token');
