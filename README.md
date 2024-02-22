@@ -42,4 +42,8 @@ steps:
 
 ### `tinybird_datasource`
 
-**Required**: This is the endpoint to which the workflow run data should be pushed to. (default: `ci_workflows`)
+**Optional**: This is the endpoint to which the workflow run data should be pushed to. (default: `ci_workflows`)
+
+### `workflow_id`
+
+**Optional**: This is the id of the workflow sent to tinybird. (default: the output of `github.context.workflow`)

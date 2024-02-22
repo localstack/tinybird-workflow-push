@@ -28,7 +28,15 @@ export async function run(): Promise<void> {
     }
     const now = new Date().toISOString()
 
-    const workflowEvent = await createWorkflowEvent(started_at, now)
+    const status = response.data.status ? response.data.status : 'unknown'
+
+    const workflow_id: string = core.getInput('workflow_id')
+    const workflowEvent = await createWorkflowEvent(
+      started_at,
+      now,
+      workflow_id,
+      status
+    )
 
     const tb_token: string = core.getInput('tinybird_token')
     const tb_datasource: string = core.getInput('tinybird_datasource')

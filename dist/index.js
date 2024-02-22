@@ -28968,7 +28968,9 @@ async function run() {
             throw new Error('Could not get the start time of the workflow');
         }
         const now = new Date().toISOString();
-        const workflowEvent = await (0, tb_1.createWorkflowEvent)(started_at, now);
+        const status = response.data.status ? response.data.status : 'unknown';
+        const workflow_id = core.getInput('workflow_id');
+        const workflowEvent = await (0, tb_1.createWorkflowEvent)(started_at, now, workflow_id, status);
         const tb_token = core.getInput('tinybird_token');
         const tb_datasource = core.getInput('tinybird_datasource');
         core.setSecret(tb_token);
@@ -29022,16 +29024,17 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.pushToTinybird = exports.createWorkflowEvent = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
-async function createWorkflowEvent(start, end) {
+async function createWorkflowEvent(start, end, workflow_id = null, outcome) {
     const event = {
         run_id: github.context.runId.toString(),
         start,
         end,
         commit: github.context.sha,
         branch: github.context.ref.split('/').pop() || '',
-        workflow: github.context.workflow,
+        workflow: workflow_id === null ? github.context.workflow : workflow_id,
         repository: `${github.context.repo.owner}/${github.context.repo.repo}`,
-        attempt: parseInt(process.env.GITHUB_RUN_ATTEMPT, 10)
+        attempt: parseInt(process.env.GITHUB_RUN_ATTEMPT, 10),
+        outcome
     };
     return event;
 }
