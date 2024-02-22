@@ -10,11 +10,14 @@ type WorkflowEvent = {
   workflow: string
   repository: string
   attempt: number
+  outcome: string
 }
 
 export async function createWorkflowEvent(
   start: string,
-  end: string
+  end: string,
+  workflow_id = '',
+  outcome: string
 ): Promise<WorkflowEvent> {
   const event: WorkflowEvent = {
     run_id: github.context.runId.toString(),
@@ -22,9 +25,10 @@ export async function createWorkflowEvent(
     end,
     commit: github.context.sha,
     branch: github.context.ref.split('/').pop() || '',
-    workflow: github.context.workflow,
+    workflow: workflow_id === '' ? github.context.workflow : workflow_id,
     repository: `${github.context.repo.owner}/${github.context.repo.repo}`,
-    attempt: parseInt(process.env.GITHUB_RUN_ATTEMPT as string, 10)
+    attempt: parseInt(process.env.GITHUB_RUN_ATTEMPT as string, 10),
+    outcome
   }
   return event
 }

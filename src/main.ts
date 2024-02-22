@@ -28,7 +28,26 @@ export async function run(): Promise<void> {
     }
     const now = new Date().toISOString()
 
-    const workflowEvent = await createWorkflowEvent(started_at, now)
+    const jobs = await octokit.rest.actions.listJobsForWorkflowRunAttempt({
+      owner: github.context.repo.owner,
+      repo: github.context.repo.repo,
+      run_id: github.context.runId,
+      attempt_number
+    })
+
+    let failed = false
+    for (const job of jobs.data.jobs) {
+      core.info(`Job ${job.name} has conclusion: ${job.conclusion}`)
+      failed = failed || job.conclusion === 'failure'
+    }
+
+    const workflow_id: string = core.getInput('workflow_id')
+    const workflowEvent = await createWorkflowEvent(
+      started_at,
+      now,
+      workflow_id,
+      failed ? 'failure' : 'success'
+    )
 
     const tb_token: string = core.getInput('tinybird_token')
     const tb_datasource: string = core.getInput('tinybird_datasource')

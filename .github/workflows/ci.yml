@@ -46,6 +46,9 @@ jobs:
   test-action:
     name: GitHub Actions Test
     runs-on: ubuntu-latest
+    needs: 
+      - test-typescript
+    if: always()
 
     steps:
       - name: Checkout
