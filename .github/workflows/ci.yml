@@ -11,6 +11,22 @@ permissions:
   actions: read
 
 jobs:
+  failing-job:
+    name: Failing Job
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail
+        id: fail
+        run: exit 1
+
+  failing-job-2:
+    name: Failing Job 2
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail
+        id: fail
+        run: exit 1
+
   test-typescript:
     name: TypeScript Tests
     runs-on: ubuntu-latest
