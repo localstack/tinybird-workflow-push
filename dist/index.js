@@ -28968,11 +28968,19 @@ async function run() {
             throw new Error('Could not get the start time of the workflow');
         }
         const now = new Date().toISOString();
-        const status = response.data.conclusion
-            ? response.data.conclusion
-            : 'unknown';
+        const jobs = await octokit.rest.actions.listJobsForWorkflowRunAttempt({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            run_id: github.context.runId,
+            attempt_number
+        });
+        let failed = false;
+        for (const job of jobs.data.jobs) {
+            core.info(`Job ${job.name} has conclusion: ${job.conclusion}`);
+            failed = failed || job.conclusion === 'failure';
+        }
         const workflow_id = core.getInput('workflow_id');
-        const workflowEvent = await (0, tb_1.createWorkflowEvent)(started_at, now, workflow_id, status);
+        const workflowEvent = await (0, tb_1.createWorkflowEvent)(started_at, now, workflow_id, failed ? 'failure' : 'success');
         const tb_token = core.getInput('tinybird_token');
         const tb_datasource = core.getInput('tinybird_datasource');
         core.setSecret(tb_token);
@@ -29026,14 +29034,14 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.pushToTinybird = exports.createWorkflowEvent = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
-async function createWorkflowEvent(start, end, workflow_id = null, outcome) {
+async function createWorkflowEvent(start, end, workflow_id = '', outcome) {
     const event = {
         run_id: github.context.runId.toString(),
         start,
         end,
         commit: github.context.sha,
         branch: github.context.ref.split('/').pop() || '',
-        workflow: workflow_id === null ? github.context.workflow : workflow_id,
+        workflow: workflow_id === '' ? github.context.workflow : workflow_id,
         repository: `${github.context.repo.owner}/${github.context.repo.repo}`,
         attempt: parseInt(process.env.GITHUB_RUN_ATTEMPT, 10),
         outcome

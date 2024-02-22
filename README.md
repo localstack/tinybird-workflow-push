@@ -13,6 +13,7 @@ This GitHub action enables you to send GitHub workflow run statistics to
     "workflow": "The name of the workflow",
     "repository": "The repository in the format <owner>/<repo-name>",
     "attempt": "The number of the run attempt"
+    "outcome": "'failure' if at least one job failed, 'success' otherwise"
   }
 ```
 
@@ -28,6 +29,7 @@ steps:
        github_token: ${{ secrets.GITHUB_TOKEN }}
        tinybird_token: ${{ secrets.TINYBIRD_TOKEN }}
        tinybird_datasource: <your-data-source>
+       workflow_id: <custom-workflow-id>
 ```
 
 ## Inputs
@@ -46,4 +48,4 @@ steps:
 
 ### `workflow_id`
 
-**Optional**: This is the id of the workflow sent to tinybird. (default: the output of `github.context.workflow`)
+**Optional**: This is the ID of the workflow sent to tinybird. (default: the output of `github.context.workflow`)
