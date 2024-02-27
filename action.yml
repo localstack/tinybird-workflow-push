@@ -19,6 +19,9 @@ inputs:
     description: 'The Tinybird datasource to which to push the data to'
     required: true
     default: 'ci_workflows'
+  workflow_id:
+    description: 'The id of the workflow'
+  
 
 runs:
   using: node20

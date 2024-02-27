@@ -62,3 +62,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           tinybird_token: ${{ secrets.TINYBIRD_CI_TOKEN }}
           tinybird_datasource: "ci_workflows_test"
+          workflow_id: "testing-workflow-id-param"
