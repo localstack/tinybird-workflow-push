@@ -29035,6 +29035,7 @@ exports.pushToTinybird = exports.createWorkflowEvent = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 async function createWorkflowEvent(start, end, workflow_id = '', outcome) {
+    const attempt = parseInt(process.env.GITHUB_RUN_ATTEMPT, 10);
     const event = {
         run_id: github.context.runId.toString(),
         start,
@@ -29043,8 +29044,9 @@ async function createWorkflowEvent(start, end, workflow_id = '', outcome) {
         branch: github.context.ref.split('/').pop() || '',
         workflow: workflow_id === '' ? github.context.workflow : workflow_id,
         repository: `${github.context.repo.owner}/${github.context.repo.repo}`,
-        attempt: parseInt(process.env.GITHUB_RUN_ATTEMPT, 10),
-        outcome
+        attempt,
+        outcome,
+        workflow_url: `${github.context.serverUrl}/${github.context.repo.owner}/${github.context.repo.repo}/actions/runs/${github.context.runId}/attempts/${attempt}`
     };
     return event;
 }
