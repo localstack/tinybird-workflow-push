@@ -12,25 +12,42 @@ This GitHub action enables you to send GitHub workflow run statistics to
     "branch": "The branch on which the workflow is executed", 
     "workflow": "The name of the workflow",
     "repository": "The repository in the format <owner>/<repo-name>",
-    "attempt": "The number of the run attempt"
-    "outcome": "'failure' if at least one job failed, 'success' otherwise"
+    "attempt": "The number of the run attempt",
+    "outcome": "'failure' if at least one job failed, 'success' otherwise",
+    "workflow_url": "The URL to the workflow run attempt this payload describes"
   }
 ```
 
 ## Usage
-
-Add this action as the last step of your last job, provide the automatic `GITHUB_TOKEN` secret,
-your Tinybird token and the Event API endpoint to which to push the data
-
+Add this action as the last one in your step like this:
 ```yaml
 steps:
-   - uses: localstack/tinybird-workflow-push@v1
-     with:
-       github_token: ${{ secrets.GITHUB_TOKEN }}
-       tinybird_token: ${{ secrets.TINYBIRD_TOKEN }}
-       tinybird_datasource: <your-data-source>
-       workflow_id: <custom-workflow-id>
+  - name: Push to Tinybird
+    if: always()
+    uses: localstack/tinybird-workflow-push@v3
+    with:
+      github_token: ${{ secrets.GITHUB_TOKEN }}
+      tinybird_token: ${{ secrets.TINYBIRD_TOKEN }}
+      tinybird_datasource: <your-data-source>
+      workflow_id: <custom-workflow-id>
 ```
+
+> [!IMPORTANT]
+> Make sure to set the right conditions and dependencies on the step / job.
+
+- `if: always()` is necessary to also execute this step in case a previous step already failed (otherwise this step would be skipped and `failure` workflow data will never be sent).
+- If you have this action in an explicit job, make sure to also define the `always()` condition _and_ set the all previous jobs as dependencies on for the job:
+  ```
+  jobs:
+    ...
+    push-to-tinybird:
+      if: always()
+      needs:
+        - <previous-jobs>
+      steps:
+        - name: Push to Tinybird
+          ...
+  ```
 
 ## Inputs
 
