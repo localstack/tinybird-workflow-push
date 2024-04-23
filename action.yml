@@ -21,6 +21,11 @@ inputs:
     default: 'ci_workflows'
   workflow_id:
     description: 'The id of the workflow'
+  outcome:
+    description: >
+      Optional input to manually override the outcome reported to Tinybird.
+      By default the outcome is calculated using the worst outcome of all jobs in the current workflow run attempt.
+    required: false
   
 
 runs:

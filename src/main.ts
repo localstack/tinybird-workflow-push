@@ -28,17 +28,23 @@ export async function run(): Promise<void> {
     }
     const now = new Date().toISOString()
 
-    const jobs = await octokit.rest.actions.listJobsForWorkflowRunAttempt({
-      owner: github.context.repo.owner,
-      repo: github.context.repo.repo,
-      run_id: github.context.runId,
-      attempt_number
-    })
+    // check if "outcome" is set as an input, effectively overwriting the detection
+    let outcome = core.getInput('outcome')
+    if (!outcome) {
+      // it "outcome" is not set, check the status of every job in the workflow
+      const jobs = await octokit.rest.actions.listJobsForWorkflowRunAttempt({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        run_id: github.context.runId,
+        attempt_number
+      })
 
-    let failed = false
-    for (const job of jobs.data.jobs) {
-      core.info(`Job ${job.name} has conclusion: ${job.conclusion}`)
-      failed = failed || job.conclusion === 'failure'
+      let failed = false
+      for (const job of jobs.data.jobs) {
+        core.info(`Job ${job.name} has conclusion: ${job.conclusion}`)
+        failed = failed || job.conclusion === 'failure'
+      }
+      outcome = failed ? 'failure' : 'success'
     }
 
     const workflow_id: string = core.getInput('workflow_id')
@@ -46,7 +52,7 @@ export async function run(): Promise<void> {
       started_at,
       now,
       workflow_id,
-      failed ? 'failure' : 'success'
+      outcome
     )
 
     const tb_token: string = core.getInput('tinybird_token')
