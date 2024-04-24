@@ -21,7 +21,6 @@ export async function run(): Promise<void> {
       run_id: github.context.runId,
       attempt_number
     })
-
     const started_at = response.data.run_started_at
     if (!started_at) {
       throw new Error('Could not get the start time of the workflow')
@@ -48,6 +47,7 @@ export async function run(): Promise<void> {
     }
 
     const workflow_id: string = core.getInput('workflow_id')
+
     const workflowEvent = await createWorkflowEvent(
       started_at,
       now,
