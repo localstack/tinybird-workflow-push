@@ -63,7 +63,7 @@ steps:
       tinybird_token: ${{ secrets.TINYBIRD_TOKEN }}
       tinybird_datasource: <your-data-source>
       workflow_id: <custom-workflow-id>
-      outcome: ${{ (contains(needs.*.result, 'failure') && "failure") || "success" }}
+      outcome: ${{ (contains(needs.*.result, 'failure') && 'failure') || 'success' }}
 ```
 
 ## Inputs
