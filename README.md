@@ -78,7 +78,7 @@ steps:
 
 ### `tinybird_datasource`
 
-**Required**: This is the endpoint to which the workflow run data should be pushed to. (default: `ci_workflows`)
+**Optional**: This is the endpoint to which the workflow run data should be pushed to. (default: `ci_workflows`)
 
 ### `workflow_id`
 
@@ -86,5 +86,5 @@ steps:
 
 ### `outcome`
 
-**Optional**: Optional input to manually override the outcome reported to Tinybird.
+**Optional**: Manually override the outcome reported to Tinybird.
 (default: the outcome is calculated using the worst outcome of all jobs in the current workflow run attempt)

@@ -17,7 +17,7 @@ inputs:
     required: true
   tinybird_datasource:
     description: 'The Tinybird datasource to which to push the data to'
-    required: true
+    required: false
     default: 'ci_workflows'
   workflow_id:
     description: 'The id of the workflow'
