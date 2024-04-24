@@ -28968,19 +28968,25 @@ async function run() {
             throw new Error('Could not get the start time of the workflow');
         }
         const now = new Date().toISOString();
-        const jobs = await octokit.rest.actions.listJobsForWorkflowRunAttempt({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            run_id: github.context.runId,
-            attempt_number
-        });
-        let failed = false;
-        for (const job of jobs.data.jobs) {
-            core.info(`Job ${job.name} has conclusion: ${job.conclusion}`);
-            failed = failed || job.conclusion === 'failure';
+        // check if "outcome" is set as an input, effectively overwriting the detection
+        let outcome = core.getInput('outcome');
+        if (!outcome) {
+            // it "outcome" is not set, check the status of every job in the workflow
+            const jobs = await octokit.rest.actions.listJobsForWorkflowRunAttempt({
+                owner: github.context.repo.owner,
+                repo: github.context.repo.repo,
+                run_id: github.context.runId,
+                attempt_number
+            });
+            let failed = false;
+            for (const job of jobs.data.jobs) {
+                core.info(`Job ${job.name} has conclusion: ${job.conclusion}`);
+                failed = failed || job.conclusion === 'failure';
+            }
+            outcome = failed ? 'failure' : 'success';
         }
         const workflow_id = core.getInput('workflow_id');
-        const workflowEvent = await (0, tb_1.createWorkflowEvent)(started_at, now, workflow_id, failed ? 'failure' : 'success');
+        const workflowEvent = await (0, tb_1.createWorkflowEvent)(started_at, now, workflow_id, outcome);
         const tb_token = core.getInput('tinybird_token');
         const tb_datasource = core.getInput('tinybird_datasource');
         core.setSecret(tb_token);
