@@ -28981,7 +28981,10 @@ async function run() {
             let failed = false;
             for (const job of jobs.data.jobs) {
                 core.info(`Job ${job.name} has conclusion: ${job.conclusion}`);
-                failed = failed || job.conclusion === 'failure';
+                failed =
+                    failed ||
+                        job.conclusion === 'failure' ||
+                        job.conclusion === 'cancelled';
             }
             outcome = failed ? 'failure' : 'success';
         }
