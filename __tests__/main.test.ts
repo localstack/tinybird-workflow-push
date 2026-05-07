@@ -1,21 +1,22 @@
+import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { run } from '../src/main'
 import { getInput } from '@actions/core'
 import { getOctokit } from '@actions/github'
 import { createWorkflowEvent } from '../src/tb'
 
-jest.mock('../src/tb', () => ({
-  createWorkflowEvent: jest.fn(),
-  pushToTinybird: jest.fn()
+vi.mock('../src/tb', () => ({
+  createWorkflowEvent: vi.fn(),
+  pushToTinybird: vi.fn()
 }))
 
-jest.mock('@actions/core', () => ({
-  info: jest.fn(),
-  getInput: jest.fn(),
-  setFailed: jest.fn(),
-  setSecret: jest.fn()
+vi.mock('@actions/core', () => ({
+  info: vi.fn(),
+  getInput: vi.fn(),
+  setFailed: vi.fn(),
+  setSecret: vi.fn()
 }))
 
-jest.mock('@actions/github', () => ({
+vi.mock('@actions/github', () => ({
   context: {
     payload: {
       pull_request: {
@@ -28,31 +29,29 @@ jest.mock('@actions/github', () => ({
       repo: 'tinybird-workflow-push'
     }
   },
-  getOctokit: jest.fn()
+  getOctokit: vi.fn()
 }))
 
-// mock the getWorkflowRunAttempt
 const mockOctokit = {
   rest: {
     actions: {
       async getWorkflowRunAttempt() {
         return { data: { run_started_at: '2020-01-22T19:33:08Z' } }
       },
-      listJobsForWorkflowRunAttempt: jest.fn()
+      listJobsForWorkflowRunAttempt: vi.fn()
     }
   }
 }
-;(getOctokit as jest.Mock).mockReturnValue(mockOctokit)
+vi.mocked(getOctokit).mockReturnValue(mockOctokit)
 
 describe('run', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
+    vi.mocked(getOctokit).mockReturnValue(mockOctokit)
   })
 
   it('should send custom outcome', async () => {
-    // mock getInput
-    // eslint-disable-next-line no-extra-semi
-    ;(getInput as jest.Mock).mockImplementation((inputName: string) => {
+    vi.mocked(getInput).mockImplementation((inputName: string) => {
       switch (inputName) {
         case 'outcome':
           return 'custom_outcome'
@@ -61,10 +60,8 @@ describe('run', () => {
       }
     })
 
-    // run the function
     await run()
 
-    // assertions
     expect(createWorkflowEvent).toHaveBeenCalledWith(
       expect.anything(),
       expect.anything(),
@@ -73,36 +70,29 @@ describe('run', () => {
     )
   })
 
-  it('should send send successful on all successful jobs', async () => {
-    mockOctokit.rest.actions.listJobsForWorkflowRunAttempt.mockReturnValue({
+  it('should send successful on all successful jobs', async () => {
+    vi.mocked(
+      mockOctokit.rest.actions.listJobsForWorkflowRunAttempt
+    ).mockReturnValue({
       data: {
         jobs: [
-          {
-            name: 'Successful Job 1',
-            conclusion: 'success'
-          },
-          {
-            name: 'Successful Job 2',
-            conclusion: 'success'
-          }
+          { name: 'Successful Job 1', conclusion: 'success' },
+          { name: 'Successful Job 2', conclusion: 'success' }
         ]
       }
     })
 
-    // mock getInput
-    ;(getInput as jest.Mock).mockImplementation((inputName: string) => {
+    vi.mocked(getInput).mockImplementation((inputName: string) => {
       switch (inputName) {
         case 'outcome':
-          return undefined
+          return ''
         default:
           return 'mocked-input'
       }
     })
 
-    // run the function
     await run()
 
-    // assertions
     expect(createWorkflowEvent).toHaveBeenCalledWith(
       expect.anything(),
       expect.anything(),
@@ -111,40 +101,29 @@ describe('run', () => {
     )
   })
 
-  it('should send send failed on a failed job', async () => {
-    mockOctokit.rest.actions.listJobsForWorkflowRunAttempt.mockImplementation(
-      async () => {
-        return {
-          data: {
-            jobs: [
-              {
-                name: 'Failed Job',
-                conclusion: 'failure'
-              },
-              {
-                name: 'Successful Job',
-                conclusion: 'success'
-              }
-            ]
-          }
-        }
+  it('should send failed on a failed job', async () => {
+    vi.mocked(
+      mockOctokit.rest.actions.listJobsForWorkflowRunAttempt
+    ).mockResolvedValue({
+      data: {
+        jobs: [
+          { name: 'Failed Job', conclusion: 'failure' },
+          { name: 'Successful Job', conclusion: 'success' }
+        ]
       }
-    )
+    })
 
-    // mock getInput
-    ;(getInput as jest.Mock).mockImplementation((inputName: string) => {
+    vi.mocked(getInput).mockImplementation((inputName: string) => {
       switch (inputName) {
         case 'outcome':
-          return undefined
+          return ''
         default:
           return 'mocked-input'
       }
     })
 
-    // run the function
     await run()
 
-    // assertions
     expect(createWorkflowEvent).toHaveBeenCalledWith(
       expect.anything(),
       expect.anything(),
@@ -153,40 +132,29 @@ describe('run', () => {
     )
   })
 
-  it('should send send failed on a cancelled job', async () => {
-    mockOctokit.rest.actions.listJobsForWorkflowRunAttempt.mockImplementation(
-      async () => {
-        return {
-          data: {
-            jobs: [
-              {
-                name: 'Cancelled Job',
-                conclusion: 'cancelled'
-              },
-              {
-                name: 'Successful Job',
-                conclusion: 'success'
-              }
-            ]
-          }
-        }
+  it('should send failed on a cancelled job', async () => {
+    vi.mocked(
+      mockOctokit.rest.actions.listJobsForWorkflowRunAttempt
+    ).mockResolvedValue({
+      data: {
+        jobs: [
+          { name: 'Cancelled Job', conclusion: 'cancelled' },
+          { name: 'Successful Job', conclusion: 'success' }
+        ]
       }
-    )
+    })
 
-    // mock getInput
-    ;(getInput as jest.Mock).mockImplementation((inputName: string) => {
+    vi.mocked(getInput).mockImplementation((inputName: string) => {
       switch (inputName) {
         case 'outcome':
-          return undefined
+          return ''
         default:
           return 'mocked-input'
       }
     })
 
-    // run the function
     await run()
 
-    // assertions
     expect(createWorkflowEvent).toHaveBeenCalledWith(
       expect.anything(),
       expect.anything(),

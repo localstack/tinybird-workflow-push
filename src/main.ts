@@ -51,7 +51,7 @@ export async function run(): Promise<void> {
 
     const workflow_id: string = core.getInput('workflow_id')
 
-    const workflowEvent = await createWorkflowEvent(
+    const workflowEvent = createWorkflowEvent(
       started_at,
       now,
       workflow_id,
