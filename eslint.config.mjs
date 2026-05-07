@@ -1,54 +1,48 @@
 import js from '@eslint/js'
 import tsPlugin from '@typescript-eslint/eslint-plugin'
-import github from 'eslint-plugin-github'
-import pluginJest from 'eslint-plugin-jest'
+import eslintComments from '@eslint-community/eslint-plugin-eslint-comments'
+import noOnlyTests from 'eslint-plugin-no-only-tests'
+import vitest from '@vitest/eslint-plugin'
 import prettierRecommended from 'eslint-plugin-prettier/recommended'
 import globals from 'globals'
-import { fileURLToPath } from 'url'
-import path from 'path'
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default [
   {
-    ignores: ['dist/', 'node_modules/', 'coverage/', 'eslint.config.mjs']
+    ignores: ['dist/', 'node_modules/', 'coverage/', 'eslint.config.mjs', 'vitest.config.ts']
   },
 
   js.configs.recommended,
 
-  github.getFlatConfigs().recommended,
+  {
+    plugins: { '@eslint-community/eslint-comments': eslintComments },
+    rules: eslintComments.configs.recommended.rules
+  },
 
-  ...tsPlugin.configs['flat/recommended'],
+  ...tsPlugin.configs['flat/recommended-type-checked'],
+  ...tsPlugin.configs['flat/stylistic-type-checked'],
 
   {
     files: ['**/*.ts'],
+    plugins: {
+      'no-only-tests': noOnlyTests
+    },
     languageOptions: {
       ecmaVersion: 2023,
       parserOptions: {
-        project: ['./tsconfig.json', './.github/linters/tsconfig.json'],
-        tsconfigRootDir: __dirname
+        project: ['./tsconfig.json', './tsconfig.test.json', './.github/linters/tsconfig.json'],
+        tsconfigRootDir: import.meta.dirname
       },
       globals: {
-        ...globals.node,
-        ...globals.jest,
-        Atomics: 'readonly',
-        SharedArrayBuffer: 'readonly'
+        ...globals.node
       }
     },
     rules: {
       camelcase: 'off',
-      'eslint-comments/no-use': 'off',
-      'eslint-comments/no-unused-disable': 'off',
-      'i18n-text/no-en': 'off',
-      'import/no-namespace': 'off',
       'no-console': 'off',
-      'no-unused-vars': 'off',
-      semi: 'off',
 
-      '@typescript-eslint/array-type': 'error',
-      '@typescript-eslint/await-thenable': 'error',
-      '@typescript-eslint/ban-ts-comment': 'error',
-      '@typescript-eslint/consistent-type-assertions': 'error',
+      'no-implicit-globals': 'error',
+      'no-only-tests/no-only-tests': 'error',
+
       '@typescript-eslint/explicit-member-accessibility': [
         'error',
         { accessibility: 'no-public' }
@@ -57,42 +51,30 @@ export default [
         'error',
         { allowExpressions: true }
       ],
-      '@typescript-eslint/no-array-constructor': 'error',
-      '@typescript-eslint/no-empty-object-type': 'error',
-      '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-extraneous-class': 'error',
-      '@typescript-eslint/no-for-in-array': 'error',
-      '@typescript-eslint/no-inferrable-types': 'error',
-      '@typescript-eslint/no-misused-new': 'error',
-      '@typescript-eslint/no-namespace': 'error',
       '@typescript-eslint/no-non-null-assertion': 'warn',
-      '@typescript-eslint/no-require-imports': 'error',
+      '@typescript-eslint/non-nullable-type-assertion-style': 'off',
       '@typescript-eslint/no-unnecessary-qualifier': 'error',
-      '@typescript-eslint/no-unnecessary-type-assertion': 'error',
-      '@typescript-eslint/no-unused-vars': 'error',
       '@typescript-eslint/no-useless-constructor': 'error',
-      '@typescript-eslint/prefer-for-of': 'warn',
-      '@typescript-eslint/prefer-function-type': 'warn',
-      '@typescript-eslint/prefer-includes': 'error',
-      '@typescript-eslint/prefer-string-starts-ends-with': 'error',
       '@typescript-eslint/promise-function-async': 'error',
-      '@typescript-eslint/require-array-sort-compare': 'error',
-      '@typescript-eslint/restrict-plus-operands': 'error',
-      '@typescript-eslint/unbound-method': 'error'
+      '@typescript-eslint/require-array-sort-compare': 'error'
     }
   },
 
   {
     files: ['**/*.test.ts', '__tests__/**/*.ts'],
-    ...pluginJest.configs['flat/recommended'],
+    ...vitest.configs.recommended,
     languageOptions: {
-      ...pluginJest.configs['flat/recommended'].languageOptions,
-      globals: {
-        ...globals.node,
-        ...globals.jest,
-        Atomics: 'readonly',
-        SharedArrayBuffer: 'readonly'
-      }
+      globals: vitest.environments.env.globals
+    },
+    rules: {
+      ...vitest.configs.recommended.rules,
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/require-await': 'off'
     }
   },
 

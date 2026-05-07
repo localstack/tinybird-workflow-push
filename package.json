@@ -25,71 +25,38 @@
   },
   "scripts": {
     "bundle": "npm run format:write && npm run package",
-    "ci-test": "jest",
+    "ci-test": "vitest run",
     "coverage": "make-coverage-badge --output-path ./badges/coverage.svg",
     "format:write": "prettier --write **/*.ts",
     "format:check": "prettier --check **/*.ts",
     "lint": "npx eslint .",
     "package": "esbuild src/index.ts --bundle --platform=node --target=node22 --outfile=dist/index.js --legal-comments=external",
     "package:watch": "npm run package -- --watch",
-    "test": "jest",
+    "test": "vitest",
     "all": "npm run format:write && npm run lint && npm run test && npm run coverage && npm run package"
   },
   "license": "MIT",
-  "jest": {
-    "preset": "ts-jest",
-    "verbose": true,
-    "clearMocks": true,
-    "testEnvironment": "node",
-    "moduleFileExtensions": [
-      "js",
-      "ts"
-    ],
-    "testMatch": [
-      "**/*.test.ts"
-    ],
-    "testPathIgnorePatterns": [
-      "/node_modules/",
-      "/dist/"
-    ],
-    "transform": {
-      "^.+\\.ts$": ["ts-jest", { "tsconfig": "tsconfig.test.json" }]
-    },
-    "moduleNameMapper": {
-      "^@actions/core$": "<rootDir>/__mocks__/@actions/core.ts",
-      "^@actions/github$": "<rootDir>/__mocks__/@actions/github.ts"
-    },
-    "coverageReporters": [
-      "json-summary",
-      "text",
-      "lcov"
-    ],
-    "collectCoverage": true,
-    "collectCoverageFrom": [
-      "./src/**"
-    ]
-  },
   "dependencies": {
     "@actions/core": "^3.0.1",
     "@actions/github": "^9.1.1"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.4",
-    "@types/jest": "^30.0.0",
-    "@types/node": "^22.0.0",
+    "@eslint-community/eslint-plugin-eslint-comments": "^4.7.1",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^25.6.0",
     "@typescript-eslint/eslint-plugin": "^8.59.2",
     "@typescript-eslint/parser": "^8.59.2",
-    "esbuild": "^0.25.0",
-    "eslint": "^9.39.4",
-    "eslint-plugin-github": "^6.0.0",
-    "eslint-plugin-jest": "^29.15.2",
-    "eslint-plugin-jsonc": "^3.1.2",
+    "@vitest/coverage-v8": "^4.1.5",
+    "@vitest/eslint-plugin": "^1.6.16",
+    "esbuild": "^0.28.0",
+    "eslint": "^10.3.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-no-only-tests": "^3.4.0",
+    "globals": "^17.6.0",
     "eslint-plugin-prettier": "^5.5.5",
-    "jest": "^30.3.0",
     "make-coverage-badge": "^1.2.0",
     "prettier": "^3.8.3",
-    "prettier-eslint": "^16.4.2",
-    "ts-jest": "^29.4.9",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
   }
 }

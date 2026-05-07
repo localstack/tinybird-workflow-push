@@ -3,10 +3,8 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noEmit": true,
-    "isolatedModules": true,
-    "module": "CommonJS",
-    "moduleResolution": "Node10",
-    "ignoreDeprecations": "6.0"
+    "rootDir": "."
   },
-  "include": ["./__tests__/**/*", "./__mocks__/**/*", "./src/**/*"]
+  "include": ["./__tests__/**/*", "./src/**/*"],
+  "exclude": ["./dist", "./node_modules", "./coverage"]
 }

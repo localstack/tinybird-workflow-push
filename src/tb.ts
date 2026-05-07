@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 
-type WorkflowEvent = {
+interface WorkflowEvent {
   run_id: string
   start: string
   end: string
@@ -14,19 +14,20 @@ type WorkflowEvent = {
   workflow_url: string
 }
 
-export async function createWorkflowEvent(
+export function createWorkflowEvent(
   start: string,
   end: string,
   workflow_id = '',
   outcome: string
-): Promise<WorkflowEvent> {
-  const attempt = parseInt(process.env.GITHUB_RUN_ATTEMPT as string, 10)
+): WorkflowEvent {
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const attempt = parseInt(process.env.GITHUB_RUN_ATTEMPT!, 10)
   const event: WorkflowEvent = {
     run_id: github.context.runId.toString(),
     start,
     end,
     commit: github.context.sha,
-    branch: github.context.ref.split('/').pop() || '',
+    branch: github.context.ref.split('/').pop() ?? '',
     workflow: workflow_id === '' ? github.context.workflow : workflow_id,
     repository: `${github.context.repo.owner}/${github.context.repo.repo}`,
     attempt,
