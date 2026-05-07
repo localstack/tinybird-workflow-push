@@ -21,7 +21,7 @@
     ".": "./dist/index.js"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=24"
   },
   "scripts": {
     "bundle": "npm run format:write && npm run package",
@@ -30,7 +30,7 @@
     "format:write": "prettier --write **/*.ts",
     "format:check": "prettier --check **/*.ts",
     "lint": "npx eslint .",
-    "package": "esbuild src/index.ts --bundle --platform=node --target=node22 --outfile=dist/index.js --legal-comments=external",
+    "package": "esbuild src/index.ts --bundle --platform=node --target=node24 --outfile=dist/index.js --legal-comments=external",
     "package:watch": "npm run package -- --watch",
     "test": "vitest",
     "all": "npm run format:write && npm run lint && npm run test && npm run coverage && npm run package"
