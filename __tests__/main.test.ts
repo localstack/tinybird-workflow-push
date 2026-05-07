@@ -51,7 +51,6 @@ describe('run', () => {
 
   it('should send custom outcome', async () => {
     // mock getInput
-    // eslint-disable-next-line no-extra-semi
     ;(getInput as jest.Mock).mockImplementation((inputName: string) => {
       switch (inputName) {
         case 'outcome':
