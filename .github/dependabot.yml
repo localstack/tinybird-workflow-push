@@ -17,6 +17,11 @@ updates:
       interval: monthly
     cooldown:
       default-days: 7
+    ignore:
+      # typescript-eslint does not support TypeScript 7 yet (needs the stable
+      # tsgo API targeted for TS 7.1); drop this once it does
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major']
     groups:
       npm:
         patterns:
