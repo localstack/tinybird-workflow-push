@@ -27,7 +27,7 @@ Add this action as the last one in your step like this:
 steps:
   - name: Push to Tinybird
     if: always()
-    uses: localstack/tinybird-workflow-push@v3
+    uses: localstack/tinybird-workflow-push@v4
     with:
       github_token: ${{ secrets.GITHUB_TOKEN }}
       tinybird_token: ${{ secrets.TINYBIRD_TOKEN }}
@@ -69,7 +69,7 @@ a outcome which should be sent to Tinybird:
 steps:
   - name: Push to Tinybird
     if: always()
-    uses: localstack/tinybird-workflow-push@v3
+    uses: localstack/tinybird-workflow-push@v4
     with:
       github_token: ${{ secrets.GITHUB_TOKEN }}
       tinybird_token: ${{ secrets.TINYBIRD_TOKEN }}
