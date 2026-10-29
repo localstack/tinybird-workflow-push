@@ -1,0 +1,92 @@
+# Dependabot updates package-lock.json but never rebuilds dist/, so every bump
+# of a bundled dependency fails the "Check dist/" job. This workflow rebuilds
+# dist/ on Dependabot PRs and pushes the result back to the PR branch.
+#
+# The build runs without write access and without dependency install scripts;
+# only the job that pushes gets a write token, and it runs no npm code.
+#
+# Pushes made with GITHUB_TOKEN do not trigger new workflow runs, so the new
+# head commit shows no checks. CI runs again on main after merging.
+name: Rebuild dist/ for Dependabot
+
+on:
+  pull_request:
+
+permissions: {}
+
+concurrency:
+  group: dependabot-dist-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build dist/
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        id: setup-node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Install Dependencies
+        id: install
+        run: npm ci --ignore-scripts
+
+      - name: Build dist/ Directory
+        id: build
+        run: npm run bundle
+
+      - name: Upload Artifact
+        id: upload
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: dist
+          path: dist/
+
+  commit:
+    name: Commit dist/
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          # needed for the push below; this job runs no dependency code
+          persist-credentials: true # zizmor: ignore[artipacked]
+
+      - name: Download Artifact
+        id: download
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: dist
+          path: dist/
+
+      - name: Commit and Push
+        id: push
+        run: |
+          if git diff --quiet -- dist/; then
+            echo "dist/ is already up to date"
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add dist/
+          git commit -m 'Rebuild dist/'
+          git push
