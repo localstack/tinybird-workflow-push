@@ -1,0 +1,83 @@
+# Cuts a patch release when dependency updates have changed the shipped
+# dist/ since the last release, so users of the floating major tag (e.g. v4)
+# pick up fixes in bundled dependencies without someone releasing by hand.
+#
+# If src/ or action.yml changed since the last release, nothing is released:
+# those changes may need a minor or major version, so release them with
+# script/release instead.
+name: Patch Release
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Patch Release
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      checks: read
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          # needed to push tags below; this job runs no dependency code
+          persist-credentials: true # zizmor: ignore[artipacked]
+
+      - name: Check for Releasable Changes
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          latest=$(git tag --list 'v*.*.*' --sort=-v:refname | head -n 1)
+          echo "Latest release: $latest"
+
+          if git diff --quiet "$latest" HEAD -- dist/; then
+            echo "dist/ is unchanged since $latest, nothing to release"
+            exit 0
+          fi
+
+          if [ -n "$(git log --format=%H "$latest"..HEAD -- src/ action.yml)" ]; then
+            echo "::notice::src/ or action.yml changed since $latest, release manually with script/release"
+            exit 0
+          fi
+
+          failed=$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/check-runs" --paginate \
+            --jq '.check_runs[] | select(.name != "Patch Release") | select(.status != "completed" or (.conclusion | IN("success", "skipped", "neutral") | not)) | .name')
+          if [ -n "$failed" ]; then
+            echo "::error::Checks on main are not green, not releasing: $(echo "$failed" | paste -sd, -)"
+            exit 1
+          fi
+
+          IFS=. read -r major minor patch <<< "${latest#v}"
+          echo "tag=v$major.$minor.$((patch + 1))" >> "$GITHUB_OUTPUT"
+          echo "major=v$major" >> "$GITHUB_OUTPUT"
+
+      - name: Tag and Release
+        id: release
+        if: steps.check.outputs.tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.check.outputs.tag }}
+          MAJOR: ${{ steps.check.outputs.major }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git tag -a "$TAG" -m "$TAG Release"
+          git tag -fa "$MAJOR" -m "$TAG"
+          git push origin "refs/tags/$TAG"
+          git push --force origin "refs/tags/$MAJOR"
+          gh release create "$TAG" --verify-tag --generate-notes --latest
