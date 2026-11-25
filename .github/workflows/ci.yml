@@ -61,7 +61,7 @@ jobs:
 
       - name: Test Local Action
         id: test-action
-        uses: ./
+        uses: $/
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           tinybird_token: ${{ secrets.TINYBIRD_CI_TOKEN }} # zizmor: ignore[secrets-outside-env]
